@@ -1,78 +1,213 @@
-// Reference for using Map as KeyPair: https://stackoverflow.com/questions/14677993/how-to-create-a-hashmap-with-two-keys-key-pair-value
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.time.LocalDate;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.Map;
+import java.util.TreeMap;
 
 public class Calendar {
 	
-	private SortedMap<String, TreeMap<String, Task>> calendar;
+	private Map<LocalDate, SortedSet<Task>> calendar = new TreeMap<>();
 	
-	public Calendar() {
+	public Calendar(String fileName) {
 		
-		calendar = new Map<>();
+		// Tasks might be unordered in file. Set up order with TreeMap and ignore conflicting tasks.
+		
+		try (BufferedReader reader = new BufferedReader(new FileReader(fileName))) {
+			
+			String line = null;  
+			while ((line = reader.readLine()) != null)  
+			{  
+		
+			   try { 
+				
+					addTask(line); 
+					
+				} catch(Exception e) { 
+				
+					System.out.println(e.getMessage()); 
+					
+				}  finally {
+					
+					continue;
+					
+				} 
+				
+			} 
+			
+		} catch (IOException e) {
+			
+			e.printStackTrace();
+			System.exit(1);
+			
+		}
+		
+		System.out.println();
 		
 	}
 	
-	public ArrayList<Task> getTasks(String day) {
+	public Collection<Task> getTasks(String date) {
 		
-		ArrayList<Task> tasks = new ArrayList<>();
+		LocalDate parsedDate;
+		try {
+			
+			parsedDate = Task.parseDate(date);
+			
+		} catch (Exception e) {
+			
+			throw new IllegalArgumentException("Invalid date format entered.");
+			
+		}
 		
-		calendar.get(day)
-			.entrySet()
-			.forEach();
-		
-		return new List<Task>();
-		
-		// Exception handling for unexisting day
+		if (calendar.containsKey(parsedDate)) {
+			 
+			return calendar.get(parsedDate);
+			
+		} else {
+			
+			throw new IllegalArgumentException("There are not tasks logged on this date.");
+			
+		}
 		
 	}
 	
-	public void addTask(String task) {
+	public void addTask(String line) {
 		
-		String[] tokens = task.split(",");
-		Task newTask = new Task(tokens[0], tokens[1], tokens[2], tokens[3], tokens[4]);
-		tokens = null;
+		Task task = new Task(line);
 		
-		// This will require a nested if-else tree to check for whether the date
-		// already exists in the Map
-		
-		if (calendar.containsKey(newTask.getDate())) {
+		if (calendar.containsKey(task.getDate())) {
 			
-			tasks = calendar.get(newTask.getDate());
+			SortedSet<Task> tasks = calendar.get(task.getDate());
 			
-			if(tasks.containsKey(newTask.getID())) {
+			if (tasks.contains(task)) {
 				
 				throw new IllegalArgumentException("There already is another task with this ID.");
 				
 			} else {
 				
-				tasks.put(newTask.getID(), newTask);
+				Task conflict = findConflicts(task);
+				if (conflict != null) {
+					
+					throw new IllegalArgumentException(String.format("%s[%s]%n%s[%s]", 
+								"The task ", 
+								task.toString(),
+								"is conflicting with ", 
+								conflict.toString()));
+					
+				}
+				
+				tasks.add(task);
 				
 			}
 			
 		} else {
 			
-			calendar.put(newTask.getDate(), 
-							new TreeMap<String, Task>()
-								.put(newTask.getID(), newTask));
+			calendar.put(task.getDate(), 
+						new TreeSet<>(Comparator
+											.comparing(Task::getStartTime)));
+			calendar.get(task.getDate()).add(task);
 			
 		}
 		
-		// Add exception handling in the case of conflicting tasks.
-		
 	}
 	
-	public void deleteTask(String day, String taskID) {
+	public void deleteTask(String date, String taskID) {
 		
-		calendar.get(day).remove(taskID);
+		LocalDate parsedDate;
+		try {
+			
+			parsedDate = Task.parseDate(date);
+			
+		} catch (Exception e) {
+			
+			throw new IllegalArgumentException("Invalid date format entered.");
+			
+		}
 		
-		if (calendar.get(day).isEmpty())
-			calendar.remove(day);
+		if (calendar.containsKey(parsedDate)) {
+			
+			if (!calendar.get(parsedDate).remove(new Task(parsedDate, taskID))) {
+				
+				throw new IllegalArgumentException(
+					"There is no task with this ID on this date."
+				);
+				
+			} 
+			
+		} else {
+			
+			throw new IllegalArgumentException(
+				"There are not tasks logged on this date."
+			);
+			
+		}
 		
-		// Exception handling for unexisting day or id
+		
+		if (calendar.get(parsedDate).isEmpty())
+			calendar.remove(parsedDate);
 		
 	}
 	
 	public void export(String fileName) {
 		
+		try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName))) {
+			
+			for (Collection<Task> tasks : calendar.values()) {
+				
+				for (Task task : tasks) {
+					
+					writer.write(task.toString());
+					writer.newLine();
+					
+				}
+				
+			}
+			
+		} catch (IOException e) {
+			
+			throw new IllegalArgumentException("Invalid file name.");
+			
+		}
 		
+	}
+	
+	private Task findConflicts(Task task) {
+		
+		LocalDate prvDate = task.getDate().minusDays(1);
+				
+		if(calendar.containsKey(prvDate)) {
+			
+			Task other = calendar.get(prvDate).last();
+			
+			if(task.isConflictingWith(other))
+				return other;
+			
+		}
+		
+		for (Task other : calendar.get(task.getDate())) {
+			
+			if(task.isConflictingWith(other))
+				return other;
+			
+		}
+		
+		LocalDate nxtDate = task.getDate().plusDays(1);
+		if(calendar.containsKey(nxtDate)) {
+			
+			Task other = calendar.get(prvDate).first();
+			
+			if(task.isConflictingWith(other))
+				return other;
+			
+		}		
+		
+		return null;
 		
 	}
 	

@@ -4,19 +4,56 @@ public class CalendarInterface {
 	
 	public static void main(String[] args) {
 		
+		Menu menu = new Menu();
+		Calendar calendar = new Calendar(args[0]);
 		Scanner input = new Scanner(System.in);
 		
-		System.out.printf("%s%n%s%n%s%n%s%n%s%n%s%n", 
-			"Enter one of the prompts below:",
-			"quit -> Ends the application.",
-			"display <day> -> Displays all tasks in given day.",
-			"add <task> -> Adds a new task to the calendar.",
-			"delete <day>,<taskID> -> Deletes task from calendar.",
-			"export <fileName> -> Exports the calendar as a file.");
+		while(true) {
 			
-		String choice = input.next();
-		
-		System.out.println(choice);
+			System.out.println("Enter one of the prompts below:");
+			for (Menu.MenuOptions option : Menu.MenuOptions.values()) {
+				
+				System.out.println(option.toString());
+				
+			}
+			
+			System.out.print("Select menu option: ");
+			String[] userInput = input.nextLine().split(" ", 2);
+			String selected = userInput[0];
+			String argument;
+			
+			while(!menu.setSelected(selected)) {
+				
+				System.out.printf("%s%n%s", 
+					"Unrecognised menu option.", 
+					"Try again: " );
+				selected = input.nextLine().split(" ", 1)[0];
+				
+			}
+			
+			if(userInput.length > 1)
+				argument = userInput[1];
+			else {
+				
+				System.out.printf("Give argument for parameter %s: ",
+									menu.getSelected().getParameter());
+				argument = input.nextLine().split(" ", 1)[0];
+				
+			}
+				
+			
+			while(!menu.getSelected().action(calendar, argument)) {
+				
+				System.out.println(menu.getSelected().getWarningMessage());
+				System.out.printf("Give argument for parameter %s: %n",
+									menu.getSelected().getParameter());
+				argument = input.nextLine().split(" ", 1)[0];
+				
+			}
+			
+			System.out.println();
+			
+		}
 		
 	}
 	
