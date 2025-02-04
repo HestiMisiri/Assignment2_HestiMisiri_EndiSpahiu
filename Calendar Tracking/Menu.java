@@ -63,6 +63,12 @@ public class Menu {
 				try {
 					
 					String[] tokens = value.split(",");
+					if (tokens.length < 2) {
+						
+						setWarningMessage("Incorrect argument format given.");
+						return false;
+						
+					}
 					calendar.deleteTask(tokens[0], tokens[1]);
 					return true;
 					
