@@ -9,7 +9,7 @@ public class Task implements Comparable<Task> {
 	private final LocalDate date;
 	private final String taskID;
 	private final LocalTime startTime;
-	private final long duration;
+	private final int duration;
 	private final String description;
 	
 	public Task(String line) {
@@ -18,16 +18,17 @@ public class Task implements Comparable<Task> {
 		if (tokens.length != 5)
 			throw new IllegalArgumentException("Invalid task format entered.");
 		
-		
+		// Time objects throw their own exceptions.
 		this.date = parseDate(tokens[0]);
 		
 		if(!isValidID(tokens[1]))
 			throw new IllegalArgumentException("Invalid ID entered.");
 		this.taskID = tokens[1];
 		
+		// Time objects throw their own exceptions.
 		this.startTime = parseTime(tokens[2]);
 		
-		this.duration = Long.parseLong(tokens[3]);
+		this.duration = Integer.parseInt(tokens[3]);
 		if (this.duration <= 0)
 			throw new IllegalArgumentException("Invalid duration entered.");
 		
@@ -37,6 +38,7 @@ public class Task implements Comparable<Task> {
 		
 	}
 	
+	// This constructor is only used to create Task objects to be used in comparisons.
 	public Task(LocalDate date, String taskID) {
 		
 		this.date = date;
@@ -49,7 +51,8 @@ public class Task implements Comparable<Task> {
 		this.description = null;
 		
 	}
-
+	
+	// This method checks if a Task instance has conflicting times with another Task.
 	public boolean isConflictingWith(Task other) {
 		
 		if ( (this.getStartDateTime()
@@ -108,16 +111,23 @@ public class Task implements Comparable<Task> {
 		
 	}
 	
+	// Used to order Tasks in SortedSets by chronological order, and check for 
+	// equivalent instances of Task objects.
 	@Override
 	public int compareTo(Task other) {
 		
-		if(this.equals(other))
+		// Since SortedSets use the compareTo() method to check for equivalence,
+		// we included the equals() method in here.
+		if (this.equals(other))
 			return 0;
 		
+		// We compare specifically by startTime since the date ordering is handled 
+		// by the Map instance in the Calendar class.
 		return this.startTime.compareTo(other.getStartTime());
 		
 	}
 	
+	// Method to parse Strings into LocalDate objects using a DateTimeFormatter.
 	public static LocalDate parseDate(String date) { 
 		
 		DateTimeFormatter dateFormat
@@ -128,6 +138,7 @@ public class Task implements Comparable<Task> {
 		
 	}
 	
+	// Method to parse Strings into LocalTime objects using a DateTimeFormatter.
 	public static LocalTime parseTime(String time) { 
 		
 		DateTimeFormatter timeFormat 
@@ -138,6 +149,7 @@ public class Task implements Comparable<Task> {
 		
 	}
 	
+	// Checks if a String is a valid ID format.
 	public static boolean isValidID(String taskID) { 
 	
 		if(Pattern.matches("^T[0-9]+", taskID)) return true;

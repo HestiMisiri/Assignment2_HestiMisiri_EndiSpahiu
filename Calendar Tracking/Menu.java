@@ -1,10 +1,16 @@
 import java.util.Collection;
 
 public class Menu {
-		
+	
+	// Instantiate an enum object of a value, to be used in the interface.
 	private MenuOptions selected;
 	
+	// An enum type which stores all menu options as constants, which when
+	// initialised, construct instances with details regarding their usage
+	// and with a special implementation of the action() method regarding
+	// their use.
 	public enum MenuOptions {
+		// QUIT exists only to be identified by the method below and end the app.
 		QUIT("quit", null, "Ends the application."),
 		DISPLAY ("display", "<date>", "Displays all tasks in given day.") {
 			
@@ -91,6 +97,8 @@ public class Menu {
 			
 		};
 		
+		// Method overriden by constants based on their use case. Returns
+		// boolean value to check if the action completed or not.
 		public boolean action(Calendar calendar, String value) { 
 		
 			return true; 
@@ -98,10 +106,14 @@ public class Menu {
 		}
 		
 		private String warningMessage;
+		// These instance variables are used in the interface to create
+		// a listing of the menu options, usage and description.
 		private final String optionName;
 		private final String parameter;
 		private final String description;
 		
+		// Constructor is initialised by enum values, with values acquired
+		// by those constants.
 		MenuOptions(String optionName, String parameter, String description) {
 			
 			this.optionName = optionName;
@@ -113,6 +125,7 @@ public class Menu {
 		@Override
 		public String toString() {
 			
+			// Special case when an MenuOption has no parameter (e.g. QUIT).
 			if(parameter == null) {
 				
 				return String.format("%s -> %s", 
@@ -136,6 +149,8 @@ public class Menu {
 		
 		public String getDescription() { return this.description; }
 		
+		// Used by action() method to change error messages based on the error
+		// thrown by the Calendar or Task class.
 		public void setWarningMessage(String warningMessage) { 
 		
 			this.warningMessage = warningMessage; 
@@ -144,12 +159,14 @@ public class Menu {
 		
 	}
 	
+	// Gets the current initialised enum constant.
 	public MenuOptions getSelected() {
 		
 		return this.selected;
 		
 	}
 	
+	// Initialises a new enum constant to be used. 
 	public boolean setSelected(String selected) {
 		
 		selected = selected.toLowerCase();
@@ -158,6 +175,7 @@ public class Menu {
 			
 			if(selected.equals(option.getOptionName())) {
 				
+				// Special case for QUIT constant to end the application.
 				if(option == MenuOptions.QUIT) {
 					
 					System.out.println("Goodbye!");
@@ -165,6 +183,7 @@ public class Menu {
 					
 				}
 				
+				// Sets selected based on the constant it matched.
 				this.selected = option;
 				return true;
 				
@@ -172,6 +191,7 @@ public class Menu {
 			
 		}
 		
+		// Returns false if it cannot match any constants name.
 		return false;
 		
 	}
