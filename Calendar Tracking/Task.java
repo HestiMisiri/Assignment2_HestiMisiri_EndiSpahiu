@@ -4,7 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.regex.Pattern;
 
-public class Task {
+public class Task implements Comparable<Task> {
 	
 	private final LocalDate date;
 	private final String taskID;
@@ -44,7 +44,7 @@ public class Task {
 		if(!isValidID(this.taskID = taskID))
 			throw new IllegalArgumentException("Invalid ID entered.");
 		
-		this.startTime = null;
+		this.startTime = LocalTime.now();
 		this.duration = 0;
 		this.description = null;
 		
@@ -87,16 +87,34 @@ public class Task {
 		
 	}
 	
-	public boolean equals(Task other) {
+	@Override
+	public boolean equals(Object obj) {
 		
-		if( this.date.equals(other.getDate()) 
-			&& this.taskID.equals(other.getTaskID()) ) {
+		if(this == obj)
+			return true;
+		
+		if(obj == null || getClass() != obj.getClass())
+			return false;
+		
+		Task other = (Task) obj;
+		if( date.equals(other.getDate()) 
+			&& taskID.equals(other.getTaskID()) ) {
 				
 				return true;
 				
 			}
 			
 		return false;
+		
+	}
+	
+	@Override
+	public int compareTo(Task other) {
+		
+		if(this.equals(other))
+			return 0;
+		
+		return this.startTime.compareTo(other.getStartTime());
 		
 	}
 	

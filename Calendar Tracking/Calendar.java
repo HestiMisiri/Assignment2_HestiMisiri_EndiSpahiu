@@ -13,11 +13,10 @@ import java.util.TreeMap;
 
 public class Calendar {
 	
-	private Map<LocalDate, SortedSet<Task>> calendar = new TreeMap<>();
+	private Map<LocalDate, TreeSet<Task>> calendar = new TreeMap<>();
 	
+	@SuppressWarnings("finally")
 	public Calendar(String fileName) {
-		
-		// Tasks might be unordered in file. Set up order with TreeMap and ignore conflicting tasks.
 		
 		try (BufferedReader reader = new BufferedReader(new FileReader(fileName))) {
 			
@@ -87,7 +86,7 @@ public class Calendar {
 			
 			if (tasks.contains(task)) {
 				
-				throw new IllegalArgumentException("There already is another task with this ID.");
+				throw new IllegalArgumentException("There already is another task with this ID or start time on this date.");
 				
 			} else {
 				
@@ -108,9 +107,7 @@ public class Calendar {
 			
 		} else {
 			
-			calendar.put(task.getDate(), 
-						new TreeSet<>(Comparator
-											.comparing(Task::getStartTime)));
+			calendar.put(task.getDate(), new TreeSet<>());
 			calendar.get(task.getDate()).add(task);
 			
 		}
