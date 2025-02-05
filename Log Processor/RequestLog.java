@@ -4,7 +4,7 @@ import java.time.format.DateTimeFormatter;
 public class RequestLog {
 	
 	private final static DateTimeFormatter DATE_FORMAT
-			= DateTimeFormatter.ofPattern("dd/MM/yyyy:HH:mm");
+			= DateTimeFormatter.ofPattern("dd/MM/yyyy:HH:mm:ss");
 	
 	private final String ip;
 	private final String requestDate;
